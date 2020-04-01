@@ -1,0 +1,38 @@
+#!/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/bin:/usr/bin:/usr/sbin:/etc/ax25:/usr/local/ax25
+
+case "$1" in
+  start)
+    kissattach /dev/ttyUSB0 ax0 > /tmp/ax25-config.tmp
+    #awk '/device/ { print $7 }' /tmp/ax25-config.tmp > /tmp/ax25-config1-tmp
+    #read Device < /tmp/ax25-config1-tmp
+    #route add -net 44.0.0.0/8 ax0
+    
+    
+    /bin/echo 1 >/proc/sys/net/ax25/ax0/ip_default_mode
+    #kissparms -p DJ1AN-1 -t 300 -l 30 -s 20 -r 80 -f n
+    
+    axparms --route add ax0 dj1an-1 --ipmode V
+    axparms --setcall ax0 dj1an-1
+    ip a add 44.149.140.52/24 dev ax0
+  
+    arp -H ax25 -i ax0 -s 44.149.140.49 db0hft
+    ip route add 44.148.0.0/15 via 44.149.140.49
+    ip route add 44.224.0.0/15 via 44.149.140.49
+    ip route add 44.130.0.0/16 via 44.149.140.49
+  ;;
+
+  stop)
+    #killall -TERM mkiss
+    killall -TERM kissattach
+    
+    #killall -TERM direwolf
+    exit 0
+  ;;
+
+  *)
+    echo "Usage: startax {start|stop}"
+    exit 0
+  ;;
+esac
+exit 0

@@ -1,11 +1,11 @@
 #!/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/bin:/usr/bin:/usr/sbin:/etc/ax25:/usr/local/ax25
-#eigene Station CALL-10
+#eigene Station CALL-1
 # nur eine /32 bekommt das eigene System
 # eigener Rechner connectet immer zu HFT-0
 
 # in /etc/ax25/axports steht dann die (unkommentierte) Zeile:
-#ax0     CALL-10        9600    255     5       144.900 MHz (1200  bps)
+#ax0     CALL-1        19200    255     5       144.900 MHz (1200  bps)
 
 # nach Connect zu DB0hft mit ax25 kann ich mit getip eine MY_IP bekommen
 

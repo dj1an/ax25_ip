@@ -1,0 +1,76 @@
+#!/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/bin:/usr/bin:/usr/sbin:/etc/ax25:/usr/local/ax25
+#eigene Station CALL-10
+# nur eine /32 bekommt das eigene System
+# eigener Rechner connectet immer zu HFT-0
+
+# in /etc/ax25/axports steht dann die (unkommentierte) Zeile:
+#ax0     CALL-10        9600    255     5       144.900 MHz (1200  bps)
+
+# nach Connect zu DB0hft mit ax25 kann ich mit getip eine MY_IP bekommen
+
+MY_CALL=DJ1AN-1 # -10 wird ggf. ergänzt
+MY_IP=44.149.140.52
+DW_CFG=/etc/ax25/direwolf.conf
+
+case "$1" in
+start)
+  echo "Starte Direwolf"
+  direwolf -t 0 -c ${DW_CFG} -p &
+  #Check if Direwolf is running
+  sleep 5
+  if [ -z "`ps ax | grep -v grep | grep direwolf`" ]; then
+    echo -e "\nERROR: Direwolf wurde nicht gestartet"
+    exit 1
+  fi
+
+  echo "Richte KISS Verbindung auf PTY port /tmp/kisstnc ein"
+  mkiss -s 19200 -x 1 /tmp/kisstnc > /tmp/unix98
+  #This creates a PTS interface like "/dev/pts/3"
+  export PTS0=`more /tmp/unix98 | grep -w /dev | cut -b -11`
+  echo "PTS0 device: $PTS0"
+  kissattach $PTS0 ax0 > /tmp/ax25-config.tmp
+  awk '/device/ { print $7 }' /tmp/ax25-config.tmp > /tmp/ax25-config1-tmp
+  read Device < /tmp/ax25-config1-tmp
+
+  #/bin/echo 1 >/proc/sys/net/ax25/ax0/ip_default_mode
+  #kissparms -p DJ1AN-1 -t 300 -l 30 -s 20 -r 80 -f n
+
+  # experimentelle Parameter, womöglich nur für direkten Link geeignet
+  #echo 7 >/proc/sys/net/ax25/ax0/standard_window_size
+  #echo 100 >/proc/sys/net/ax25/ax0/t1_timeout
+  #echo 30 >/proc/sys/net/ax25/ax0/t2_timeout
+  #echo 30000 >/proc/sys/net/ax25/ax0/t3_timeout
+  #echo 30 >/proc/sys/net/ax25/ax0/maximum_retry_count
+  
+  # https://thomask.sdf.org/blog/2017/08/06/improving-arp-performance-on-slow-ax-25-links.html
+  #echo 5000 > /proc/sys/net/ipv4/neigh/ax0/retrans_time_ms
+  #echo 1200000 > /proc/sys/net/ipv4/neigh/ax0/base_reachable_time_ms
+  
+  axparms -route add ax0 db0hft -ipmode vc
+  axparms --setcall ax0 ${MY_CALL}
+  ip address add ${MY_IP}/32 dev ax0
+  
+  arp -H ax25 -i ax0 -s 44.149.140.50 db0hft
+  
+  ip route add 44.149.140.50 dev ax0
+  ip route add 44.130.0.0/16 via 44.149.140.50
+  ip route add 44.148.0.0/15 via 44.149.140.50
+  ip route add 44.224.0.0/15 via 44.149.140.50
+;;
+
+stop)
+  killall -TERM mkiss
+  killall -TERM kissattach
+  killall -TERM direwolf
+  arp -d 44.149.140.50
+exit 0
+;;
+
+*)
+echo "Usage: startax {start|stop}"
+exit 0
+;;
+
+esac
+exit 0

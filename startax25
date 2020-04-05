@@ -49,7 +49,7 @@ case "$1" in
   stop)
     killall -TERM kissattach
     arp -d 44.149.140.50
-	iptables -D OUTPUT -s ${MY_IP}/32 -d 224.0.0.0/4 -j REJECT
+    iptables -D OUTPUT -s ${MY_IP}/32 -d 224.0.0.0/4 -j REJECT
     exit 0
   ;;
 

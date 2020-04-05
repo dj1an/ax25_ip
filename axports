@@ -1,2 +1,4 @@
 #/etc/ax25/axports
-ax0     DJ1AN-1 19200   236     2       DJ1AN Home
+# change MYCALL to your callsign
+
+ax0     MYCALL-1 19200   236     2       DJ1AN Home

@@ -1,7 +1,7 @@
 # ax25_ip
 
-ax25 ip on modern linux
+Scripts for using ip over ax25 radio links on modern linux
 
-startax25 für TNC Betrieb
+startax25 for Hardware TNC
 
-startax25_dw für Direwolf
+startax25_dw for Direwolf Soundmodem

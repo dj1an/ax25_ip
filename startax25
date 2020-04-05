@@ -41,11 +41,15 @@ case "$1" in
     ip route add 44.148.0.0/15 via 44.149.140.50
     ip route add 44.224.0.0/15 via 44.149.140.50
 
+	#Blockt ausgehenden Multicast auf dem AX Device, Chromium Knebel
+	iptables -A OUTPUT -s ${MY_IP}/32 -d 224.0.0.0/4 -j REJECT
+
   ;;
 
   stop)
     killall -TERM kissattach
     arp -d 44.149.140.50
+	iptables -D OUTPUT -s ${MY_IP}/32 -d 224.0.0.0/4 -j REJECT
     exit 0
   ;;
 

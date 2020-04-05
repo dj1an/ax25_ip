@@ -57,6 +57,9 @@ start)
   ip route add 44.130.0.0/16 via 44.149.140.50
   ip route add 44.148.0.0/15 via 44.149.140.50
   ip route add 44.224.0.0/15 via 44.149.140.50
+    
+  #Blockt ausgehenden Multicast auf dem AX Device, Chromium Knebel
+  iptables -A OUTPUT -s ${MY_IP}/32 -d 224.0.0.0/4 -j REJECT
 ;;
 
 stop)
@@ -64,6 +67,7 @@ stop)
   killall -TERM kissattach
   killall -TERM direwolf
   arp -d 44.149.140.50
+  iptables -D OUTPUT -s ${MY_IP}/32 -d 224.0.0.0/4 -j REJECT
 exit 0
 ;;
 

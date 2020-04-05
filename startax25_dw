@@ -1,30 +1,28 @@
 #!/bin/bash
-PATH=/usr/local/sbin:/usr/local/bin:/bin:/usr/bin:/usr/sbin:/etc/ax25:/usr/local/ax25
-#eigene Station CALL-10
-# nur eine /32 bekommt das eigene System
-# eigener Rechner connectet immer zu HFT-0
-
-# in /etc/ax25/axports steht dann die (unkommentierte) Zeile:
-#ax0     CALL-1        19200    255     5       144.900 MHz (1200  bps)
-
-# nach Connect zu DB0hft mit ax25 kann ich mit getip eine MY_IP bekommen
-
-MY_CALL=DJ1AN-1 # -1 wird ggf. ergänzt
-MY_IP=44.149.140.52
+# Script for connecting my Local Digipeater DB0HFT running Xnet
+#
+# after connecting DB0HFT with axcall i can get my Hamnet IP
+# with command 'getip'
+#
+# Change MY_CALL below to your Callsign, same as in axports
+# Change MY_IP to the IP you got from the Digipeater
+        
+MY_CALL=MYCALL-1
+MY_IP=44.149.140.55
 DW_CFG=/etc/ax25/direwolf.conf
 
 case "$1" in
 start)
-  echo "Starte Direwolf"
+  echo "Starting Direwolf"
   direwolf -t 0 -c ${DW_CFG} -p &
   #Check if Direwolf is running
   sleep 5
   if [ -z "`ps ax | grep -v grep | grep direwolf`" ]; then
-    echo -e "\nERROR: Direwolf wurde nicht gestartet"
+    echo -e "\nERROR: Direwolf was not started"
     exit 1
   fi
 
-  echo "Richte KISS Verbindung auf PTY port /tmp/kisstnc ein"
+  echo "Adding KISS Connection on PTY port /tmp/kisstnc"
   mkiss -s 19200 -x 1 /tmp/kisstnc > /tmp/unix98
   #This creates a PTS interface like "/dev/pts/3"
   export PTS0=`more /tmp/unix98 | grep -w /dev | cut -b -11`
@@ -36,7 +34,7 @@ start)
   #/bin/echo 1 >/proc/sys/net/ax25/ax0/ip_default_mode
   #kissparms -p DJ1AN-1 -t 300 -l 30 -s 20 -r 80 -f n
 
-  # experimentelle Parameter, womöglich nur für direkten Link geeignet
+  # experimental Parameters, maybe only for direct Links?
   #echo 7 >/proc/sys/net/ax25/ax0/standard_window_size
   #echo 100 >/proc/sys/net/ax25/ax0/t1_timeout
   #echo 30 >/proc/sys/net/ax25/ax0/t2_timeout
@@ -58,7 +56,7 @@ start)
   ip route add 44.148.0.0/15 via 44.149.140.50
   ip route add 44.224.0.0/15 via 44.149.140.50
     
-  #Blockt ausgehenden Multicast auf dem AX Device, Chromium Knebel
+  #Blocks outgoing Multicast on AX Device
   iptables -A OUTPUT -s ${MY_IP}/32 -d 224.0.0.0/4 -j REJECT
 ;;
 
@@ -72,7 +70,7 @@ exit 0
 ;;
 
 *)
-echo "Usage: startax {start|stop}"
+echo "Usage: startax25_dw {start|stop}"
 exit 0
 ;;
 

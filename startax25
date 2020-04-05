@@ -1,25 +1,25 @@
 #!/bin/bash
-PATH=/usr/local/sbin:/usr/local/bin:/bin:/usr/bin:/usr/sbin:/etc/ax25:/usr/local/ax25
-#eigene Station CALL-1
-# nur eine /32 bekommt das eigene System
-# eigener Rechner connectet immer zu HFT-0
+# Script for connecting my Local Digipeater DB0HFT running Xnet
+#
+# after connecting DB0HFT with axcall i can get my Hamnet IP
+# with command 'getip'
+#
+# Change MY_CALL below to your Callsign, same as in axports
+# Change MY_IP to the IP you got from the Digipeater
 
-# in /etc/ax25/axports steht dann die (unkommentierte) Zeile:
-#ax0     CALL-1        19200    255     5       144.900 MHz (1200  bps)
-
-# nach Connect zu DB0hft mit ax25 kann ich mit getip eine MY_IP bekommen
-
-MY_CALL=DJ1AN-1 # -10 wird ggf. ergänzt
-MY_IP=44.149.140.52
+MY_CALL=MYCALL-1
+MY_IP=44.149.140.55
 SER_KISS=/dev/ttyUSB0
 
+
+PATH=/usr/local/sbin:/usr/local/bin:/bin:/usr/bin:/usr/sbin:/etc/ax25:/usr/local/ax25
 case "$1" in
   start)
     kissattach $SER_KISS ax0 > /tmp/ax25-config.tmp
     
     #echo 1 > /proc/sys/net/ax25/ax0/ip_default_mode
-    
-    # experimentelle Parameter, womöglich nur für direkten Link geeignet
+
+    # experimental Parameters, maybe only for direct Links?
     #echo 7 >/proc/sys/net/ax25/ax0/standard_window_size
     #echo 100 >/proc/sys/net/ax25/ax0/t1_timeout
     #echo 30 >/proc/sys/net/ax25/ax0/t2_timeout
@@ -41,7 +41,7 @@ case "$1" in
     ip route add 44.148.0.0/15 via 44.149.140.50
     ip route add 44.224.0.0/15 via 44.149.140.50
 
-    #Blockt ausgehenden Multicast auf dem AX Device, Chromium Knebel
+    #Blocks outgoing Multicast on our AX Device
     iptables -A OUTPUT -s ${MY_IP}/32 -d 224.0.0.0/4 -j REJECT
 
   ;;
